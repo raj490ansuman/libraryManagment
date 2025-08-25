@@ -28,6 +28,8 @@ const getActivityIcon = (type: string) => {
       return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
     case 'RESERVATION':
       return <ClockCircleOutlined style={{ color: '#faad14' }} />;
+    case 'SUGGESTION':
+      return <BookOutlined style={{ color: '#722ed1' }} />;
     default:
       return <UserOutlined />;
   }
@@ -44,10 +46,12 @@ const getActivityDescription = (activity: Activity) => {
       return `${userName} returned ${bookTitle}`;
     case 'RESERVATION':
       return `${userName} reserved ${bookTitle}`;
+    case 'SUGGESTION':
+      return activity.details || `${userName} suggested ${bookTitle}`;
     case 'SYSTEM':
       return activity.details;
     default:
-      return 'Activity completed';
+      return activity.details || 'Activity completed';
   }
 };
 

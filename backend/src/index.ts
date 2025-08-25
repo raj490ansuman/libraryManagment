@@ -7,6 +7,7 @@ import borrowingRoutes from "./routes/borrowings";
 import reservationRoutes from "./routes/reservations";
 import bookRoutes from "./routes/books";
 import activityRoutes from "./routes/activity.routes";
+import suggestionRoutes from "./routes/suggestions";
 import cookieParser from "cookie-parser";
 import path from 'path';
 
@@ -64,7 +65,7 @@ app.use(
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["set-cookie"],
   })
@@ -81,6 +82,7 @@ app.use("/borrowings", borrowingRoutes);
 app.use("/reservations", reservationRoutes);
 app.use("/books", bookRoutes);
 app.use("/activities", activityRoutes);
+app.use("/suggestions", suggestionRoutes);
 
 // Serve React build
 const frontendPath = path.join(__dirname, '../frontend/build'); // adjust path

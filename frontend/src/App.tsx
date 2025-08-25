@@ -7,6 +7,8 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { BooksPage } from "./pages/BooksPage";
 import { MyBorrowingsPage } from "./pages/MyBorrowingsPage";
 import { MyReservationsPage } from "./pages/MyReservationsPage";
+import { SuggestionsPage } from "./pages/SuggestionsPage";
+import { Layout } from "./components/Layout";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -75,6 +77,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyReservationsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/suggestions" 
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <SuggestionsPage />
+                </Layout>
               </ProtectedRoute>
             } 
           />

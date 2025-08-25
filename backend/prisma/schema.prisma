@@ -12,6 +12,13 @@ enum Role {
   ADMIN
 }
 
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PURCHASED
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   name         String
@@ -24,6 +31,7 @@ model User {
   reservations Reservation[]
   suggestions  Suggestion[]
   activities   Activity[]
+  votes        Vote[]
 }
 
 model Book {
@@ -59,13 +67,37 @@ model Reservation {
 }
 
 model Suggestion {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  title     String
-  author    String
-  reason    String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  title       String
+  author      String
+  reason      String?
+  status      SuggestionStatus @default(PENDING)
+  votes       Vote[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id])
+  
+  @@index([status])
+  @@index([createdAt])
+  
+  // This is a virtual field that will be computed in the application code
+  // It's not stored in the database
+  // @@ignore
+  // voteCount   Int?            @default(0)
+}
+
+model Vote {
+  id           Int         @id @default(autoincrement())
+  suggestionId Int
+  userId       Int
+  createdAt    DateTime    @default(now())
+  suggestion   Suggestion  @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id])
+  
+  @@unique([suggestionId, userId], name: "suggestion_user_unique")
+  @@index([suggestionId])
+  @@index([userId])
 }
 
 model Activity {

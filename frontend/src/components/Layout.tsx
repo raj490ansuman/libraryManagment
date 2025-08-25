@@ -106,6 +106,12 @@ export const Layout = ({ children, title }: LayoutProps) => {
       label: "My Reservations",
       onClick: () => navigate("/my-reservations"),
     },
+    {
+      key: "suggestions",
+      icon: <BookOutlined />,
+      label: "Book Suggestions",
+      onClick: () => navigate("/suggestions"),
+    },
   ];
 
   return (
