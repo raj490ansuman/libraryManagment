@@ -28,6 +28,19 @@ router.get("/", authMiddleware, async (req: Request, res: Response) => {
         status: true,
         createdAt: true,
         updatedAt: true,
+        borrowings: {
+          where: {
+            returnedAt: null
+          },
+          select: {
+            user: {
+              select: {
+                name: true
+              }
+            }
+          },
+          take: 1
+        },
         _count: {
           select: {
             borrowings: true,

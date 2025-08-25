@@ -36,6 +36,11 @@ interface Book {
   title: string;
   author: string;
   status: string;
+  borrowings: Array<{
+    user: {
+      name: string;
+    };
+  }>;
 }
 
 export const BooksPage = () => {
@@ -198,7 +203,17 @@ export const BooksPage = () => {
             } else if (status === "borrowed") {
               return <Tag color="blue" style={{ fontSize: "12px" }}>Borrowed</Tag>;
             }
-            return <Tag color="default" style={{ fontSize: "12px" }}>{status}</Tag>;
+            return <Tag style={{ fontSize: "12px" }}>{status}</Tag>;
+          },
+        },
+        {
+          title: "Borrowed By",
+          key: "borrower",
+          render: (record: Book) => {
+            if (record.status === "available" || !record.borrowings?.length) {
+              return <span>-</span>;
+            }
+            return <span>{record.borrowings[0].user.name}</span>;
           },
         }
       );
