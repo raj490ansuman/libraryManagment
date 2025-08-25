@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Form, Input, Button, message, Card, Typography } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import api from "../api/api";
 import { useNavigate, Link } from "react-router-dom";
 import { AnimatedBackground } from "./AnimatedBackground";
+import { useAuth } from "../contexts/AuthContext";
 
 const { Title, Text } = Typography;
 
@@ -12,10 +13,13 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: { email: string; password: string }) => {
     try {
-      await api.post("/users/login", values);
+      setLoading(true);
+      await login(values.email, values.password);
       message.success("Welcome back! You've been successfully logged in.");
       
       // Call the onLoginSuccess callback if provided
@@ -26,10 +30,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       // Navigate to dashboard
       navigate("/dashboard");
     } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.error ||
+      const errorMsg = err.response?.data?.error ||
         "Login failed. Please check your credentials.";
-      message.error(`${errorMsg}`);
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,9 +90,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block size="large">
-              Login
-            </Button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+    <Button
+      type="primary"
+      htmlType="submit"
+      size="large"
+      loading={loading}
+    >
+      {loading ? "Logging in..." : "Log In"}
+    </Button>
+  </div>
           </Form.Item>
 
           <div style={{ textAlign: "center" }}>

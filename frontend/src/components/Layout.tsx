@@ -27,6 +27,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  role: 'USER' | 'ADMIN';
   createdAt: string;
 }
 
@@ -231,7 +232,7 @@ export const Layout = ({ children, title, selectedKey }: LayoutProps) => {
                 whiteSpace: 'nowrap',
                 fontSize: isMobile ? '14px' : '16px'
               }}>
-                {isMobile ? user.name : `Welcome, ${user.name}!`}
+                {isMobile ? user.name : `Welcome, ${user.name}! (${user.role})`}
               </span>
             ) : (
               <span>Welcome back!</span>

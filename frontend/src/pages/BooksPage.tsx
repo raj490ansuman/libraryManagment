@@ -1,12 +1,33 @@
 import { useEffect, useState } from "react";
-import { Table, Button, message, Card, Tag, Typography, Input, Space } from "antd";
+import { 
+  Table, 
+  Button, 
+  message, 
+  Card, 
+  Tag, 
+  Typography, 
+  Input, 
+  Space, 
+  Modal, 
+  Form, 
+  Select, 
+  Tooltip,
+  Popconfirm
+} from "antd";
 import { 
   SearchOutlined,
-  PlusOutlined
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined
 } from "@ant-design/icons";
 import api from "../api/api";
 import { ReserveButton } from "../components/ReserveButton";
 import { Layout } from "../components/Layout";
+import { useAuth } from "../contexts/AuthContext";
+
+const { confirm } = Modal;
+const { Option } = Select;
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -24,6 +45,12 @@ export const BooksPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [form] = Form.useForm();
+  const { user } = useAuth();
+  
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     const handleResize = () => {
@@ -78,6 +105,62 @@ export const BooksPage = () => {
   useEffect(() => {
     fetchBooks();
   }, []);
+
+  const handleAddBook = () => {
+    setEditingBook(null);
+    form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleEditBook = (book: Book) => {
+    setEditingBook(book);
+    form.setFieldsValue({
+      title: book.title,
+      author: book.author,
+      status: book.status
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteBook = async (id: number) => {
+    try {
+      await api.delete(`/books/${id}`);
+      message.success('Book deleted successfully');
+      fetchBooks();
+    } catch (error) {
+      message.error('Failed to delete book');
+    }
+  };
+
+  const showDeleteConfirm = (id: number) => {
+    confirm({
+      title: 'Are you sure you want to delete this book?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'This action cannot be undone.',
+      okText: 'Yes, delete it',
+      okType: 'danger',
+      cancelText: 'No, keep it',
+      onOk() {
+        return handleDeleteBook(id);
+      },
+    });
+  };
+
+  const handleSubmit = async (values: any) => {
+    try {
+      if (editingBook) {
+        await api.put(`/books/${editingBook.id}`, values);
+        message.success('Book updated successfully');
+      } else {
+        await api.post('/books', values);
+        message.success('Book added successfully');
+      }
+      setIsModalVisible(false);
+      fetchBooks();
+    } catch (error) {
+      message.error(`Failed to ${editingBook ? 'update' : 'add'} book`);
+    }
+  };
 
   const getColumns = () => {
     const baseColumns = [
@@ -145,6 +228,32 @@ export const BooksPage = () => {
               style={{ width: isMobile ? "100%" : "auto" }}
             />
           )}
+          
+          {isAdmin && (
+            <Space direction={isMobile ? "vertical" : "horizontal"} size={isMobile ? 8 : "small"} style={{ width: "100%" }}>
+              <Tooltip title="Edit book">
+                <Button 
+                  type="text" 
+                  icon={<EditOutlined />} 
+                  onClick={() => handleEditBook(record)}
+                  style={{ width: isMobile ? "100%" : "auto" }}
+                >
+                  {isMobile && "Edit"}
+                </Button>
+              </Tooltip>
+              <Tooltip title="Delete book">
+                <Button 
+                  type="text" 
+                  danger 
+                  icon={<DeleteOutlined />} 
+                  onClick={() => showDeleteConfirm(record.id)}
+                  style={{ width: isMobile ? "100%" : "auto" }}
+                >
+                  {isMobile && "Delete"}
+                </Button>
+              </Tooltip>
+            </Space>
+          )}
         </Space>
       ),
     });
@@ -155,7 +264,7 @@ export const BooksPage = () => {
   return (
     <Layout title="Browse Books" selectedKey="books">
       <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
           <Search
             placeholder="Search books by title or author..."
             allowClear
@@ -165,6 +274,17 @@ export const BooksPage = () => {
             onChange={(e) => handleSearch(e.target.value)}
             style={{ width: "100%", maxWidth: isMobile ? "100%" : 400 }}
           />
+          {isAdmin && (
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              size={isMobile ? "middle" : "large"}
+              onClick={handleAddBook}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              Add Book
+            </Button>
+          )}
         </div>
         
         <Table
@@ -183,6 +303,49 @@ export const BooksPage = () => {
           scroll={{ x: isMobile ? 'max-content' : undefined }}
         />
       </Card>
+
+      <Modal
+        title={editingBook ? "Edit Book" : "Add New Book"}
+        open={isModalVisible}
+        onOk={() => form.submit()}
+        onCancel={() => setIsModalVisible(false)}
+        okText={editingBook ? "Update" : "Add"}
+        confirmLoading={loading}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{ status: 'available' }}
+        >
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{ required: true, message: 'Please input the book title!' }]}
+          >
+            <Input placeholder="Enter book title" />
+          </Form.Item>
+          
+          <Form.Item
+            name="author"
+            label="Author"
+            rules={[{ required: true, message: 'Please input the author name!' }]}
+          >
+            <Input placeholder="Enter author name" />
+          </Form.Item>
+          
+          <Form.Item
+            name="status"
+            label="Status"
+            rules={[{ required: true }]}
+          >
+            <Select>
+              <Option value="available">Available</Option>
+              <Option value="unavailable">Unavailable</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

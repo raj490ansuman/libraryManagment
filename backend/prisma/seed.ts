@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -8,19 +8,28 @@ async function main() {
 
   const usersData = [
     {
+      name: "Admin User",
+      email: "admin@library.com",
+      passwordHash: await bcrypt.hash("admin123", 10),
+      role: Role.ADMIN
+    },
+    {
       name: "Alice",
       email: "alice@example.com",
       passwordHash: await bcrypt.hash("pass123", 10),
+      role: Role.USER
     },
     {
       name: "Bob",
       email: "bob@example.com",
       passwordHash: await bcrypt.hash("pass123", 10),
+      role: Role.USER
     },
     {
       name: "Charlie",
       email: "charlie@example.com",
       passwordHash: await bcrypt.hash("pass123", 10),
+      role: Role.USER
     },
   ];
   const booksData = [
