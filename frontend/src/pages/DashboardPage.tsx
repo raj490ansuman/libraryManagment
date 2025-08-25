@@ -5,6 +5,7 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined
 } from "@ant-design/icons";
+import { ActivityFeed } from "../components/ActivityFeed";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import { Layout } from "../components/Layout";
@@ -141,12 +142,7 @@ export const DashboardPage = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Recent Activity" style={{ height: 300 }}>
-            <div style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>
-              <BookOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />
-              <p>No recent activity</p>
-            </div>
-          </Card>
+          <ActivityFeed />
         </Col>
       </Row>
     </Layout>

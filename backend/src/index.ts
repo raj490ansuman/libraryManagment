@@ -6,6 +6,7 @@ import userRoutes from "./routes/users";
 import borrowingRoutes from "./routes/borrowings";
 import reservationRoutes from "./routes/reservations";
 import bookRoutes from "./routes/books";
+import activityRoutes from "./routes/activity.routes";
 import cookieParser from "cookie-parser";
 import path from 'path';
 
@@ -79,6 +80,7 @@ app.use("/users", userRoutes);
 app.use("/borrowings", borrowingRoutes);
 app.use("/reservations", reservationRoutes);
 app.use("/books", bookRoutes);
+app.use("/activities", activityRoutes);
 
 // Serve React build
 const frontendPath = path.join(__dirname, '../frontend/build'); // adjust path
