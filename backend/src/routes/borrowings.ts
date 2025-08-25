@@ -42,7 +42,7 @@ router.post("/borrow/:bookId", authMiddleware, async (req: AuthRequest, res) => 
 
   // Create borrowing record
   const borrowedAt = new Date();
-  const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+  const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days (1 week) from now
 
   const borrowing = await prisma.borrowing.create({
     data: {
