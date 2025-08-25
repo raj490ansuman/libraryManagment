@@ -66,7 +66,7 @@ export const DashboardPage = () => {
 
   return (
     <Layout title="Dashboard">
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} style={{ margin: 0, width: '100%' }}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
@@ -112,7 +112,7 @@ export const DashboardPage = () => {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      <Row gutter={[16, 16]} style={{ margin: '24px 0 0', width: '100%' }}>
         <Col xs={24} lg={12}>
           <Card title="Quick Actions" style={{ height: 300 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

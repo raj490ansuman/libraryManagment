@@ -1,4 +1,5 @@
 import { List, Typography, Avatar, Card } from 'antd';
+import './ActivityFeed.css';
 import { BookOutlined, CheckCircleOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import api from '../api/api';
@@ -72,35 +73,62 @@ export const ActivityFeed = () => {
   return (
     <Card 
       title="Recent Activity" 
-      style={{ height: '100%' }}
-      bodyStyle={{ padding: '16px 0' }}
+      styles={{
+        body: {
+          flex: 1,
+          padding: 0,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }
+      }}
+      style={{ 
+        height: 300,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
     >
-      <List
-        loading={loading}
-        itemLayout="horizontal"
-        dataSource={activities}
-        renderItem={(activity) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={
-                <Avatar style={{ backgroundColor: '#f0f2f5' }}>
-                  {getActivityIcon(activity.type)}
-                </Avatar>
-              }
-              title={
-                <div>
-                  {getActivityDescription(activity)}
-                  <div>
+      <div style={{ 
+        height: '100%',
+        overflowY: 'auto',
+        padding: '0 16px'
+      }}>
+        <List
+          loading={loading}
+          itemLayout="horizontal"
+          dataSource={activities}
+          renderItem={(activity) => (
+            <List.Item 
+              style={{
+                padding: '12px 0',
+                borderBottom: '1px solid #f0f0f0',
+              }}
+              className="activity-item"
+            >
+              <List.Item.Meta
+                avatar={
+                  <Avatar style={{ 
+                    backgroundColor: '#f0f2f5',
+                    color: activity.type === 'CHECKOUT' ? '#1890ff' : 
+                           activity.type === 'RETURN' ? '#52c41a' : 
+                           activity.type === 'RESERVATION' ? '#faad14' : '#8c8c8c'
+                  }}>
+                    {getActivityIcon(activity.type)}
+                  </Avatar>
+                }
+                title={
+                  <div style={{ lineHeight: 1.4 }}>
+                    <div>{getActivityDescription(activity)}</div>
                     <Text type="secondary" style={{ fontSize: '12px' }}>
                       {new Date(activity.createdAt).toLocaleString()}
                     </Text>
                   </div>
-                </div>
-              }
-            />
-          </List.Item>
-        )}
-      />
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
     </Card>
   );
 };
