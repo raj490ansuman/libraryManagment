@@ -41,9 +41,12 @@ model Book {
   status       String   @default("available")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  deletedAt    DateTime? @map("deleted_at")
   borrowings   Borrowing[]
   reservations Reservation[]
   activities   Activity[]
+
+  @@index([deletedAt])
 }
 
 model Borrowing {
@@ -76,10 +79,12 @@ model Suggestion {
   votes       Vote[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?       @map("deleted_at")
   user        User            @relation(fields: [userId], references: [id])
   
   @@index([status])
   @@index([createdAt])
+  @@index([deletedAt])
   
   // This is a virtual field that will be computed in the application code
   // It's not stored in the database

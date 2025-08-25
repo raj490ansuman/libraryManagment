@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import session from "express-session";
-import { PrismaClient } from "@prisma/client";
+import prisma from "./middlewares/prismaSoftDelete";
 import userRoutes from "./routes/users";
 import borrowingRoutes from "./routes/borrowings";
 import reservationRoutes from "./routes/reservations";
@@ -19,7 +19,6 @@ declare module "express-session" {
 }
 
 const app = express();
-const prisma = new PrismaClient();
 
 const isProduction = process.env.NODE_ENV === "production";
 const secureCookies = isProduction && process.env.USE_HTTPS === 'true';

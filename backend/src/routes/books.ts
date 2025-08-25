@@ -1,9 +1,8 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { authMiddleware, adminMiddleware } from "../middlewares/auth";
+import prisma from "../middlewares/prismaSoftDelete";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Extend the Request type to include params
 interface BookRequest extends Request {
@@ -126,21 +125,19 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req: BookRequest, res
   }
 });
 
-// Delete a book (admin only)
+// Delete a book (admin only) - soft delete
 router.delete("/:id", authMiddleware, adminMiddleware, async (req: BookRequest, res: Response) => {
-  const id = req.params.id as string;
+  const id = parseInt(req.params.id!);
+  const userId = (req as any).user?.id;
 
   try {
-    // First check if the book exists and is not borrowed or reserved
+    // Check if the book exists and is not borrowed
     const book = await prisma.book.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include: {
         borrowings: {
-          where: {
-            returnedAt: null
-          }
-        },
-        reservations: true
+          where: { returnedAt: null }
+        }
       }
     });
 
@@ -152,19 +149,24 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req: BookRequest, 
       return res.status(400).json({ error: "Cannot delete a borrowed book" });
     }
 
-    // Delete associated reservations first
-    if (book.reservations.length > 0) {
-      await prisma.reservation.deleteMany({
-        where: { bookId: book.id }
-      });
-    }
+    // This will be converted to a soft delete by our middleware
+    await prisma.book.delete({ where: { id } });
 
-    // Then delete the book
-    await prisma.book.delete({
-      where: { id: parseInt(id) }
+    // Log the activity
+    await prisma.activity.create({
+      data: {
+        type: 'BOOK',
+        userId,
+        bookId: book.id,
+        details: `Book deleted: "${book.title}" by ${book.author}`
+      }
     });
 
-    res.json({ message: "Book deleted successfully" });
+    res.json({ 
+      success: true,
+      message: 'Book has been deleted',
+      deletedAt: new Date().toISOString()
+    });
   } catch (error) {
     console.error("Error deleting book:", error);
     res.status(500).json({ error: "Failed to delete book" });

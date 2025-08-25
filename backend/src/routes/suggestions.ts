@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { authMiddleware, adminMiddleware, AuthRequest } from "../middlewares/auth";
 import { logActivity } from "../services/activity.service";
+import prisma from "../middlewares/prismaSoftDelete";
 
 // Extend the Request type to include user and query params
 type SuggestionRequest = AuthRequest & {
@@ -31,16 +32,16 @@ type SuggestionWithVotes = Prisma.SuggestionGetPayload<{
 const router = Router();
 
 // Extend the Prisma client to include the Vote model
-type PrismaClientWithVotes = PrismaClient & {
+interface PrismaClientWithVotes extends Omit<typeof prisma, 'vote'> {
   vote: {
     count: (args: { where: { suggestionId: number } }) => Promise<number>;
     findFirst: (args: { where: { suggestionId: number; userId: number } }) => Promise<{ id: number } | null>;
     delete: (args: { where: { id: number } }) => Promise<void>;
     create: (args: { data: { suggestionId: number; userId: number } }) => Promise<void>;
   };
-};
+}
 
-const prisma = new PrismaClient() as unknown as PrismaClientWithVotes;
+const prismaWithVotes = prisma as unknown as PrismaClientWithVotes;
 
 // BigInt serializer to handle large numbers in JSON responses
 const serializeBigInt = (obj: any): any => {
@@ -63,9 +64,11 @@ router.get("/", authMiddleware, async (req: SuggestionRequest, res) => {
   try {
     const { status, sortBy = 'createdAt', order = 'desc' } = req.query;
     
-    // First get all suggestions with user info and vote counts
-    const suggestions = await prisma.suggestion.findMany({
-      where: status ? { status } : {},
+    // First get all non-deleted suggestions with user info and vote counts
+    const suggestions = await prismaWithVotes.suggestion.findMany({
+      where: {
+        ...(status ? { status } : {})
+      } as any, // Temporary any to bypass type checking until we regenerate Prisma client
       include: {
         user: {
           select: {
@@ -192,8 +195,8 @@ router.post("/:id/vote", authMiddleware, async (req: SuggestionRequest, res) => 
   const userId = req.user!.id;
 
   try {
-    // Check if suggestion exists
-    const suggestion = await prisma.suggestion.findUnique({
+    // Check if suggestion exists (soft delete is handled by middleware)
+    const suggestion = await prismaWithVotes.suggestion.findUnique({
       where: { id: suggestionId }
     });
 
@@ -202,7 +205,7 @@ router.post("/:id/vote", authMiddleware, async (req: SuggestionRequest, res) => 
     }
 
     // Check if user already voted
-    const existingVote = await prisma.vote.findFirst({
+    const existingVote = await prismaWithVotes.vote.findFirst({
       where: {
         suggestionId,
         userId
@@ -211,14 +214,14 @@ router.post("/:id/vote", authMiddleware, async (req: SuggestionRequest, res) => 
 
     if (existingVote) {
       // Remove vote if already voted
-      await prisma.vote.delete({
+      await prismaWithVotes.vote.delete({
         where: { id: existingVote.id }
       });
       return res.json({ voted: false });
     }
 
     // Add vote
-    await prisma.vote.create({
+    await prismaWithVotes.vote.create({
       data: {
         suggestionId,
         userId
@@ -243,9 +246,9 @@ router.patch("/:id/status", authMiddleware, adminMiddleware, async (req: Suggest
 
   try {
     // First get the suggestion to log activity
-    const existingSuggestion = await prisma.suggestion.findUnique({
+    const existingSuggestion = await prismaWithVotes.suggestion.findUnique({
       where: { id: suggestionId },
-      select: { title: true }
+      select: { title: true, author: true }
     });
 
     if (!existingSuggestion) {
@@ -253,19 +256,19 @@ router.patch("/:id/status", authMiddleware, adminMiddleware, async (req: Suggest
     }
 
     // Update the suggestion status using raw query to avoid type issues
-    const updatedSuggestion = await prisma.$executeRaw`
+    const updatedSuggestion = await prismaWithVotes.$executeRaw`
       UPDATE Suggestion 
       SET status = ${status}, updatedAt = NOW() 
       WHERE id = ${suggestionId}
     `;
     
     // Fetch the updated suggestion
-    const updated = await prisma.suggestion.findUnique({
+    const updated = await prismaWithVotes.suggestion.findUnique({
       where: { id: suggestionId }
     });
     
     // Fetch the updated suggestion with user data
-    const suggestionWithUser = await prisma.suggestion.findUnique({
+    const suggestionWithUser = await prismaWithVotes.suggestion.findUnique({
       where: { id: suggestionId },
       include: {
         user: {
@@ -279,18 +282,20 @@ router.patch("/:id/status", authMiddleware, adminMiddleware, async (req: Suggest
     }
 
     // Get the vote count
-    const voteCount = await prisma.$queryRaw`
-      SELECT COUNT(*) as count FROM Vote WHERE suggestionId = ${suggestionId}
-    `;
+    const voteCount = await prismaWithVotes.vote.count({
+      where: {
+        suggestionId
+      }
+    });
 
     // Create a new object with the vote count
     const updatedSuggestionWithVoteCount = {
       ...suggestionWithUser,
-      voteCount: Number((voteCount as any)[0].count)
+      voteCount: voteCount
     };
 
         // Get the full suggestion with author
-    const fullSuggestion = await prisma.suggestion.findUnique({
+    const fullSuggestion = await prismaWithVotes.suggestion.findUnique({
       where: { id: suggestionId },
       select: { title: true, author: true }
     });
@@ -316,14 +321,14 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req: SuggestionReq
   const suggestionId = parseInt(req.params.id!);
 
   try {
-    // First, get the suggestion details before deleting
+    // Get the suggestion details before soft deleting
     const suggestion = await prisma.suggestion.findUnique({
       where: { id: suggestionId },
       select: { 
         id: true, 
         title: true, 
         status: true,
-        author: true  // Include author for the activity log
+        author: true
       }
     });
 
@@ -331,13 +336,9 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req: SuggestionReq
       return res.status(404).json({ error: "Suggestion not found" });
     }
 
-    // Delete all votes associated with this suggestion
-    await prisma.vote.deleteMany({
-      where: { suggestionId }
-    });
-
-    // Delete the suggestion
-    await prisma.suggestion.delete({
+    // Soft delete the suggestion (the middleware will handle this)
+    // This will trigger our soft delete middleware
+    await prismaWithVotes.suggestion.delete({
       where: { id: suggestionId }
     });
 
@@ -350,7 +351,11 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req: SuggestionReq
       `Suggestion deleted (was ${suggestion.status}): "${suggestion.title}" by ${suggestion.author || 'Unknown Author'}`
     );
 
-    res.json({ success: true });
+    res.json({ 
+      success: true,
+      message: 'Suggestion has been soft deleted',
+      deletedAt: new Date().toISOString()
+    });
   } catch (error) {
     console.error("Error deleting suggestion:", error);
     res.status(500).json({ error: "Failed to delete suggestion" });
