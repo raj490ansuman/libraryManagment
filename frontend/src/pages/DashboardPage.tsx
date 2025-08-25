@@ -113,6 +113,21 @@ export const DashboardPage = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ margin: '24px 0 0', width: '100%' }}>
+        <Col xs={24}>
+          <Card title="📚 Borrowing Policy" style={{ marginBottom: 16 }}>
+            <div style={{ lineHeight: '2' }}>
+              <p><strong>Borrowing Period:</strong> 7 days (1 week) from the date of borrowing</p>
+              <p><strong>Eligibility:</strong> All registered users can borrow books</p>
+              <p><strong>Borrowing Limit:</strong> 1 book per user at a time</p>
+              <p><strong>Renewals:</strong> Not currently available - please return and re-borrow if needed</p>
+              <p><strong>Overdue Books:</strong> Please return books on time to avoid inconvenience to other users</p>
+              <p><strong>Book Status:</strong> Books are marked as 'Available' or 'Borrowed' in real-time</p>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ margin: '24px 0 0', width: '100%' }}>
         <Col xs={24} lg={12}>
           <Card title="Quick Actions" style={{ height: 300 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
