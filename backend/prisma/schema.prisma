@@ -1,0 +1,61 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  borrowings   Borrowing[]
+  reservations Reservation[]
+  suggestions  Suggestion[]
+}
+
+model Book {
+  id           Int      @id @default(autoincrement())
+  title        String
+  author       String
+  status       String   @default("available")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  borrowings   Borrowing[]
+  reservations Reservation[]
+}
+
+model Borrowing {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  bookId     Int
+  borrowedAt DateTime @default(now())
+  dueDate    DateTime
+  returnedAt DateTime?
+  user       User     @relation(fields: [userId], references: [id])
+  book       Book     @relation(fields: [bookId], references: [id])
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  book      Book     @relation(fields: [bookId], references: [id])
+}
+
+model Suggestion {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  author    String
+  reason    String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}

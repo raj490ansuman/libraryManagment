@@ -1,0 +1,145 @@
+.water-drops {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Base droplet styles */
+.droplet {
+  position: absolute;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.6) 20%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  border-radius: 50%;
+  filter: blur(1px);
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* Droplet animations */
+@keyframes dropletAppear {
+  0% {
+    transform: scale(0) translateY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+}
+
+/* Droplet trail effect */
+.droplet::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0)
+  );
+  transform: translateY(-50%) scale(0.3);
+  opacity: 0;
+  animation: trailFade 1s ease-out forwards;
+}
+
+@keyframes trailFade {
+  0% {
+    transform: translateY(-50%) scale(0.3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(0) scale(0.1);
+    opacity: 0;
+  }
+}
+
+/* Enhanced glass effect for static books */
+.static-book-spine {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.05) 60%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+/* Water streaks effect */
+.water-streak {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0)
+  );
+  opacity: 0;
+  transform-origin: top;
+}
+
+@keyframes waterStreak {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+/* Condensation effect */
+.condensation {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 8px 8px;
+  opacity: 0.3;
+  animation: condensationFade 4s infinite alternate;
+}
+
+@keyframes condensationFade {
+  0% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
