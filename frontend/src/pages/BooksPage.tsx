@@ -11,8 +11,7 @@ import {
   Modal, 
   Form, 
   Select, 
-  Tooltip,
-  Popconfirm
+  Tooltip
 } from "antd";
 import { 
   SearchOutlined,
@@ -262,8 +261,8 @@ export const BooksPage = () => {
   };
 
   return (
-    <Layout title="Browse Books" selectedKey="books">
-      <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+    <Layout title="Books">
+      <Card styles={{ body: { padding: isMobile ? 12 : 24 } }}>
         <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
           <Search
             placeholder="Search books by title or author..."

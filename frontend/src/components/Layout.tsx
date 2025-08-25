@@ -19,8 +19,7 @@ const { Title, Text } = Typography;
 
 interface LayoutProps {
   children: ReactNode;
-  title: string;
-  selectedKey: string;
+  title?: string;
 }
 
 interface User {
@@ -31,7 +30,7 @@ interface User {
   createdAt: string;
 }
 
-export const Layout = ({ children, title, selectedKey }: LayoutProps) => {
+export const Layout = ({ children, title }: LayoutProps) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -152,7 +151,6 @@ export const Layout = ({ children, title, selectedKey }: LayoutProps) => {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[selectedKey]}
           items={menuItems}
         />
         <div

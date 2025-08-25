@@ -134,7 +134,7 @@ export const MyBorrowingsPage = () => {
   ];
 
   return (
-    <Layout title="My Borrowings" selectedKey="my-borrowings">
+    <Layout title="My Borrowings">
       <Card>
         <Table
           dataSource={borrowings}

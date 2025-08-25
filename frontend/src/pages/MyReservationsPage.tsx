@@ -120,7 +120,7 @@ export const MyReservationsPage = () => {
   ];
 
   return (
-    <Layout title="My Reservations" selectedKey="my-reservations">
+    <Layout title="My Reservations">
       <Card>
         {reservations.length === 0 && !loading ? (
           <div style={{ textAlign: "center", padding: "40px 0" }}>

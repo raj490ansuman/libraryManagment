@@ -7,11 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const { Title, Text } = Typography;
 
-interface LoginFormProps {
-  onLoginSuccess?: () => void;
-}
-
-export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
+export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -22,12 +18,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       await login(values.email, values.password);
       message.success("Welcome back! You've been successfully logged in.");
       
-      // Call the onLoginSuccess callback if provided
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
-      
-      // Navigate to dashboard
+      // Navigate to dashboard after successful login
       navigate("/dashboard");
     } catch (err: any) {
       const errorMsg = err.response?.data?.error ||

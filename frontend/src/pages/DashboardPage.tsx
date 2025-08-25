@@ -64,7 +64,7 @@ export const DashboardPage = () => {
   };
 
   return (
-    <Layout title="Dashboard" selectedKey="dashboard">
+    <Layout title="Dashboard">
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
