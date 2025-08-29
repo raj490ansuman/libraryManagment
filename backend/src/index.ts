@@ -48,7 +48,7 @@ if (app.get("env") === "production") {
 // Allowed origins
 const allowedOrigins = [
   "http://localhost:3000",
-  // "https://lib-managemant-fe.vercel.app",
+  "https://library-managment-ruddy.vercel.app",
   "https://m6zjk5s2-4000.asse.devtunnels.ms",
   // "https://86e599eed21b.ngrok-free.app",
   // "https://lotus-sitting-crisis-tour.trycloudflare.com",
